@@ -15,7 +15,7 @@ const Icon = ({ name, ...p }) => {
 
 /* ============================================================
    ZettelCards — flashcards (Anki-style SRS) + Zettelkasten links
-   Single-file React artifact. Persistence via window.storage.
+   Single-file React artifact. Persistence via localStorage.
    ============================================================ */
 
 // ---------- Spaced-repetition (SM-2, adapted to 4 grades) ----------
@@ -50,12 +50,12 @@ const isDue = (c) => !c.srs?.due || c.srs.due <= Date.now();
 const KEY = "zettelcards:state:v1";
 async function loadState() {
   try {
-    const r = await window.storage.get(KEY);
-    return r ? JSON.parse(r.value) : null;
+    const r = await localStorage.getItem(KEY);
+    return r ? JSON.parse(r) : null;
   } catch { return null; }
 }
 async function saveState(state) {
-  try { await window.storage.set(KEY, JSON.stringify(state)); } catch {}
+  try { await localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
 }
 
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -484,7 +484,7 @@ function DeckDetail({ state, update, setView, deckId }) {
   );
 }
 
-function CardRow({ card, state, onEdit }) {
+function CardRow({ card, _state, onEdit }) {
   const due = isDue(card);
   const links = card.links?.length || 0;
   const g = card.srs?.lastGrade ? GRADES[card.srs.lastGrade] : null;
@@ -1415,7 +1415,7 @@ function ExamResult({ questions, answers, deck, setView, config }) {
 function Progress({ state, update, setView, pushToast }) {
   const g = state.game;
   const lvl = levelOf(g.xp);
-  const prog = levelProgress(g.xp);
+  const _prog = levelProgress(g.xp);
   const goalPct = Math.min(1, g.todayCount / g.goal);
   const earned = ACHIEVEMENTS.filter((a) => g.unlocked[a.id]).length;
 
